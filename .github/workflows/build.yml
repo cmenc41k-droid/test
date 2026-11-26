@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - 'SiteTest3_project.zip'
+      - 'SiteTest3_1_project.zip'
       - '.github/workflows/build.yml'
 
 jobs:
