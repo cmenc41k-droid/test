@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - "SiteTest3_project.zip"
+      - "SiteTest3_1_project.zip"
       - ".github/workflows/build.yml"
 
 permissions:
@@ -22,8 +22,8 @@ jobs:
 
       - name: Check project archive
         run: |
-          test -f SiteTest3_project.zip
-          unzip -o SiteTest3_project.zip -d .
+          test -f SiteTest3_1_project.zip
+          unzip -o SiteTest3_1_project.zip -d .
           test -f SiteTest3/app/build.gradle
           test -f SiteTest3/settings.gradle
 
