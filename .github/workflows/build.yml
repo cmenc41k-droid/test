@@ -1,42 +1,51 @@
-name: Build SiteTest3_1 APK
+
+name: Build SiteTest 3.1 APK
 
 on:
   workflow_dispatch:
   push:
     paths:
-      - 'SiteTest3_1_project.zip'
-      - '.github/workflows/build.yml'
+      - "SiteTest3_project.zip"
+      - ".github/workflows/build.yml"
+
+permissions:
+  contents: read
 
 jobs:
   build:
+    name: Build Android APK
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Download repository
         uses: actions/checkout@v4
 
-      - name: Unpack project
+      - name: Check project archive
         run: |
-          unzip SiteTest3_1_project.zip -d .
-          ls -la
+          test -f SiteTest3_project.zip
+          unzip -o SiteTest3_project.zip -d .
+          test -f SiteTest3/app/build.gradle
+          test -f SiteTest3/settings.gradle
 
-      - name: Setup Java
+      - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: "17"
 
-      - name: Setup Gradle
+      - name: Set up Gradle 8.9
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.9'
+          gradle-version: "8.9"
 
-      - name: Build APK
-        working-directory: SiteTest3_1
-        run: gradle assembleDebug
+      - name: Build debug APK
+        working-directory: SiteTest3
+        run: gradle assembleDebug --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: SiteTest3_1-APK
-          path: SiteTest3_1/app/build/outputs/apk/debug/app-debug.apk
+          name: SiteTest-3.1-APK
+          path: SiteTest3/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 7
