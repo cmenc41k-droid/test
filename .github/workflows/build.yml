@@ -1,5 +1,4 @@
-
-name: Build SiteTest3 APK
+name: Build SiteTest3_1 APK
 
 on:
   workflow_dispatch:
@@ -18,7 +17,7 @@ jobs:
 
       - name: Unpack project
         run: |
-          unzip SiteTest3_project.zip -d .
+          unzip SiteTest3_1_project.zip -d .
           ls -la
 
       - name: Setup Java
@@ -33,11 +32,11 @@ jobs:
           gradle-version: '8.9'
 
       - name: Build APK
-        working-directory: SiteTest3
+        working-directory: SiteTest3_1
         run: gradle assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: SiteTest3-APK
-          path: SiteTest3/app/build/outputs/apk/debug/app-debug.apk
+          name: SiteTest3_1-APK
+          path: SiteTest3_1/app/build/outputs/apk/debug/app-debug.apk
