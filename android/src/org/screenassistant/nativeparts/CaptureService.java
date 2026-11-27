@@ -27,10 +27,6 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Foreground-сервис (тип mediaProjection) + захват экрана.
- * Кадры сохраняются в JPEG только по запросу capture().
- */
 public class CaptureService extends Service {
     public static final int IDLE = 0, PENDING = 1, READY = 2, DENIED = 3;
     public static volatile int state = IDLE;
@@ -60,7 +56,6 @@ public class CaptureService extends Service {
         ctx.stopService(new Intent(ctx, CaptureService.class));
     }
 
-    /** Блокирующий вызов: сохраняет следующий кадр в JPEG. Вызывать НЕ из UI-потока. */
     public static boolean capture(String path, int timeoutMs) {
         CaptureService s = instance;
         if (s == null || state != READY) return false;
@@ -85,7 +80,7 @@ public class CaptureService extends Service {
             MediaProjectionManager m =
                     (MediaProjectionManager) getSystemService(MEDIA_PROJECTION_SERVICE);
             projection = m.getMediaProjection(resultCode, resultData);
-            resultData = null; // токен одноразовый
+            resultData = null;
 
             thread = new HandlerThread("sa-capture");
             thread.start();
