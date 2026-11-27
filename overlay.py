@@ -32,6 +32,11 @@ INVISIBLE, VISIBLE = 4, 0
 LAST_ERROR = ""
 STARTED_OK = False
 
+JString = autoclass("java.lang.String")
+
+
+def cs(text):
+    return cast("java.lang.CharSequence", JString(str(text)))
 
 class _Touch(PythonJavaClass):
     __javainterfaces__ = ["android/view/View$OnTouchListener"]
@@ -97,7 +102,7 @@ class Overlay:
 
     def _tv(self, text, size=14, color=None, bold=False):
         t = TextView(self.ctx)
-        t.setText(text)
+        t.setText(cs(text))
         t.setTextSize(float(size))
         t.setTextColor(color if color is not None else Color.WHITE)
         return t
@@ -136,7 +141,7 @@ class Overlay:
             print(msg)
             LAST_ERROR = "Ошибка окна: " + " | ".join(msg.strip().splitlines()[-3:])[:400]
             try:
-                Toast.makeText(self.ctx, LAST_ERROR[:200], 1).show()
+                Toast.makeText(self.ctx, cs(LAST_ERROR[:200]), 1).show()
             except Exception:
                 traceback.print_exc()
 
@@ -232,7 +237,7 @@ class Overlay:
         # показываем окно (последним шагом, чтобы при ошибке не осталось пустого окна)
         self.wm.addView(root, self.lp)
         self.shown, self.minimized = True, False
-        self.counter.setText("Снимков: 0")
+        self.counter.setText(cs("Снимков: 0"))
         # ---------- перетаскивание ----------
     def _save_geo(self):
         try:
@@ -327,7 +332,7 @@ class Overlay:
     # ---------- UI-хелперы (безопасно вызывать из любого потока) ----------
     @run_on_ui_thread
     def _ui_answer(self, text):
-        self.answer.setText(text)
+        self.answer.setText(cs(text))
 
     @run_on_ui_thread
     def _ui_visible(self, visible):
@@ -342,12 +347,12 @@ class Overlay:
 
     @run_on_ui_thread
     def _update_counter(self, extra=""):
-        self.counter.setText("Снимков: %d%s" % (len(self.shots), extra))
+        self.counter.setText(cs("Снимков: %d%s" % (len(self.shots), extra)))
 
     # ---------- действия ----------
     def _on_copy(self):
         cm = cast("android.content.ClipboardManager", self.ctx.getSystemService(Context.CLIPBOARD_SERVICE))
-        cm.setPrimaryClip(ClipData.newPlainText("Screen Assistant", self.answer.getText().toString()))
+        cm.setPrimaryClip(ClipData.newPlainText(cs("Screen Assistant"), cs(self.answer.getText().toString())))
         self._update_counter("  ·  скопировано")
 
     def _on_capture(self):
