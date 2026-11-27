@@ -1,0 +1,10 @@
+.buildozer/
+bin/
+p4a_src/
+__pycache__/
+*.pyc
+*.apk
+*.aab
+.venv/
+.idea/
+.vscode/

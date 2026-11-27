@@ -1,0 +1,8 @@
+# Зависимости для сборки (используются в buildozer.spec -> requirements)
+python3==3.11.5
+hostpython3==3.11.5
+kivy==2.3.0
+pyjnius
+android
+certifi
+# Для локальной проверки синтаксиса не нужны, всё ставится Buildozer'ом.
