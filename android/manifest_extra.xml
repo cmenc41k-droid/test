@@ -1,0 +1,10 @@
+<!-- SCREEN_ASSISTANT_EXTRA: вставляется перед </application> скриптом tools/patch_p4a_manifest.py -->
+<service
+    android:name="org.screenassistant.nativeparts.CaptureService"
+    android:exported="false"
+    android:foregroundServiceType="mediaProjection" />
+<activity
+    android:name="org.screenassistant.nativeparts.CapturePermissionActivity"
+    android:exported="false"
+    android:excludeFromRecents="true"
+    android:theme="@android:style/Theme.Translucent.NoTitleBar" />
