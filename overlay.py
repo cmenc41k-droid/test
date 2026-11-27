@@ -24,17 +24,21 @@ Color = autoclass("android.graphics.Color")
 PixelFormat = autoclass("android.graphics.PixelFormat")
 ClipData = autoclass("android.content.ClipData")
 Gravity = autoclass("android.view.Gravity")
+Toast = autoclass("android.widget.Toast")
 
 DOWN, UP, MOVE, CANCEL = 0, 1, 2, 3
 INVISIBLE, VISIBLE = 4, 0
 
+LAST_ERROR = ""
+STARTED_OK = False
+
 
 class _Touch(PythonJavaClass):
-    __javainterfaces__ = ["android/view/View$OnTouchListener"]
-    __javacontext__ = "app"
+    javainterfaces = ["android/view/View$OnTouchListener"]
+    javacontext = "app"
 
-    def __init__(self, cb):
-        super().__init__()
+    def init(self, cb):
+        super().init()
         self.cb = cb
 
     @java_method("(Landroid/view/View;Landroid/view/MotionEvent;)Z")
@@ -47,11 +51,11 @@ class _Touch(PythonJavaClass):
 
 
 class _Click(PythonJavaClass):
-    __javainterfaces__ = ["android/view/View$OnClickListener"]
-    __javacontext__ = "app"
+    javainterfaces = ["android/view/View$OnClickListener"]
+    javacontext = "app"
 
-    def __init__(self, cb):
-        super().__init__()
+    def init(self, cb):
+        super().init()
         self.cb = cb
 
     @java_method("(Landroid/view/View;)V")
@@ -63,7 +67,7 @@ class _Click(PythonJavaClass):
 
 
 class Overlay:
-    def __init__(self, get_api_key, get_prompt, on_close):
+    def init(self, get_api_key, get_prompt, on_close):
         self.get_api_key, self.get_prompt, self.on_close = get_api_key, get_prompt, on_close
         self.ctx = PythonActivity.mActivity.getApplicationContext()
         self.wm = cast("android.view.WindowManager", self.ctx.getSystemService(Context.WINDOW_SERVICE))
@@ -123,6 +127,20 @@ class Overlay:
 
     @run_on_ui_thread
     def start(self):
+        global LAST_ERROR, STARTED_OK
+        try:
+            self._start_impl()
+            STARTED_OK = True
+        except Exception:
+            msg = traceback.format_exc()
+            print(msg)
+            LAST_ERROR = "Ошибка окна: " + " | ".join(msg.strip().splitlines()[-3:])[:400]
+            try:
+                Toast.makeText(self.ctx, LAST_ERROR[:200], 1).show()
+            except Exception:
+                traceback.print_exc()
+
+    def _start_impl(self):
         if self.shown:
             return
         sw, sh = self._screen()
@@ -174,8 +192,10 @@ class Overlay:
         b1 = self._btn("Сфотографировать", Color.rgb(46, 110, 220), self._on_capture)
         b2 = self._btn("Отправить", Color.rgb(36, 150, 90), self._on_send)
         self.btn_capture, self.btn_send = b1, b2
-        l1 = LLP(0, -2, 1.0); l1.setMargins(0, 0, q // 2, 0)
-        l2 = LLP(0, -2, 1.0); l2.setMargins(q // 2, 0, 0, 0)
+        l1 = LLP(0, -2, 1.0)
+        l1.setMargins(0, 0, q // 2, 0)
+        l2 = LLP(0, -2, 1.0)
+        l2.setMargins(q // 2, 0, 0, 0)
         row.addView(b1, l1)
         row.addView(b2, l2)
         root.addView(row, LLP(-1, -2))
@@ -199,8 +219,6 @@ class Overlay:
         root.addView(foot, LLP(-1, -2))
 
         self.root = root
-        self.wm.addView(root, self.lp)
-        self.shown, self.minimized = True, False
 
         # точка (в свёрнутом режиме)
         d = self.dp(44)
@@ -210,9 +228,12 @@ class Overlay:
         self.dot_lp = self._wlp(d, d, dp_pos["x"], dp_pos["y"])
         self._touch(dot, self._on_dot_touch)
         self.dot = dot
-        self._update_counter()
 
-    # ---------- перетаскивание ----------
+        # показываем окно (последним шагом, чтобы при ошибке не осталось пустого окна)
+        self.wm.addView(root, self.lp)
+        self.shown, self.minimized = True, False
+        self.counter.setText("Снимков: 0")
+        # ---------- перетаскивание ----------
     def _save_geo(self):
         try:
             settings.save_geometry(self.lp.x, self.lp.y, self.lp.width, self.lp.height)
