@@ -149,7 +149,3 @@ class ScreenAssistantApp(App):
     def _overlay_closed(self):
         self._overlay = None
         self.ui.set_status("Плавающий режим закрыт, захват экрана остановлен.")
-
-
-if name == "main":
-    ScreenAssistantApp().run()
