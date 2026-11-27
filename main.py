@@ -1,5 +1,6 @@
 """Screen Assistant: точка входа. Стартовый экран -> проверки -> разрешения -> плавающее окно."""
 import threading
+import traceback
 
 from kivy.app import App
 from kivy.clock import Clock, mainthread
@@ -115,12 +116,33 @@ class ScreenAssistantApp(App):
 
     # ---------- шаг 3: плавающее окно ----------
     def _launch_overlay(self):
-        from jnius import autoclass
-        import overlay
-        if self._overlay is None:
-            self._overlay = overlay.Overlay(settings.get_api_key, settings.get_prompt, self._overlay_closed)
-        self._overlay.start()
+        try:
+            from jnius import autoclass
+            import overlay
+            if self._overlay is None:
+                self._overlay = overlay.Overlay(settings.get_api_key, settings.get_prompt,
+                                                self._overlay_closed)
+            overlay.LAST_ERROR = ""
+            overlay.STARTED_OK = False
+            self._overlay.start()
+            self.ui.set_status("Создаю плавающее окно…")
+            Clock.schedule_once(lambda dt: self._after_overlay_start(overlay), 1.5)
+        except Exception:
+            msg = traceback.format_exc()
+            print(msg)
+            self.ui.set_status("Ошибка запуска окна: " + " | ".join(msg.strip().splitlines()[-3:])[:400],
+                               error=True)
+
+    def _after_overlay_start(self, overlay):
+        if overlay.LAST_ERROR:
+            self.ui.set_status(overlay.LAST_ERROR, error=True)
+            return
+        if not overlay.STARTED_OK:
+            self.ui.set_status("Окно не создалось (нет ответа от UI-потока). Нажмите «Начать» ещё раз.",
+                               error=True)
+            return
         self.ui.set_status("Плавающий режим запущен.")
+        from jnius import autoclass
         autoclass("org.kivy.android.PythonActivity").mActivity.moveTaskToBack(True)
 
     @mainthread
@@ -129,5 +151,5 @@ class ScreenAssistantApp(App):
         self.ui.set_status("Плавающий режим закрыт, захват экрана остановлен.")
 
 
-if __name__ == "__main__":
+if name == "main":
     ScreenAssistantApp().run()
