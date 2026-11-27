@@ -34,11 +34,11 @@ STARTED_OK = False
 
 
 class _Touch(PythonJavaClass):
-    javainterfaces = ["android/view/View$OnTouchListener"]
-    javacontext = "app"
+    __javainterfaces__ = ["android/view/View$OnTouchListener"]
+    __javacontext__ = "app"
 
-    def init(self, cb):
-        super().init()
+    def __init__(self, cb):
+        super().__init__()
         self.cb = cb
 
     @java_method("(Landroid/view/View;Landroid/view/MotionEvent;)Z")
@@ -51,11 +51,11 @@ class _Touch(PythonJavaClass):
 
 
 class _Click(PythonJavaClass):
-    javainterfaces = ["android/view/View$OnClickListener"]
-    javacontext = "app"
+    __javainterfaces__ = ["android/view/View$OnClickListener"]
+    __javacontext__ = "app"
 
-    def init(self, cb):
-        super().init()
+    def __init__(self, cb):
+        super().__init__()
         self.cb = cb
 
     @java_method("(Landroid/view/View;)V")
@@ -67,7 +67,7 @@ class _Click(PythonJavaClass):
 
 
 class Overlay:
-    def init(self, get_api_key, get_prompt, on_close):
+    def __init__(self, get_api_key, get_prompt, on_close):
         self.get_api_key, self.get_prompt, self.on_close = get_api_key, get_prompt, on_close
         self.ctx = PythonActivity.mActivity.getApplicationContext()
         self.wm = cast("android.view.WindowManager", self.ctx.getSystemService(Context.WINDOW_SERVICE))
